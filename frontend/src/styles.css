@@ -1,0 +1,64 @@
+:root {
+  --bg: #f5f6f8; --card: #fff; --text: #1d2330; --muted: #677084; --line: #dde1e8;
+  --accent: #2f5bd3; --green: #1f9d55; --amber: #d98b00; --red: #d0342c;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text); background: var(--bg);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1, h2 { margin-top: 0; }
+button, .button {
+  background: var(--accent); color: #fff; border: 0; border-radius: 6px;
+  padding: 8px 14px; font: inherit; cursor: pointer; text-decoration: none; display: inline-block;
+}
+button:disabled { opacity: .5; cursor: default; }
+button.danger { background: var(--red); }
+button.link { background: none; color: var(--accent); padding: 0; }
+input, select { font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 6px; width: 100%; }
+label { display: block; margin-bottom: 12px; }
+.topbar { display: flex; justify-content: space-between; padding: 10px 20px; background: #1d2330; color: #fff; }
+.topbar button.link { color: #9fb6ff; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin: 20px auto; max-width: 1100px; }
+.card.narrow { max-width: 420px; }
+.muted { color: var(--muted); }
+.small { font-size: .85em; }
+.error { color: var(--red); }
+.notice { background: #fff6e0; border: 1px solid #f2d48a; padding: 10px; border-radius: 6px; }
+.list { list-style: none; padding: 0; }
+.list li { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding: 12px 0; gap: 16px; }
+.exam-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+.exam-layout .card { margin: 20px 0; }
+.preview { width: 100%; aspect-ratio: 4 / 3; background: #111; border-radius: 8px; object-fit: cover; transform: scaleX(-1); }
+.preview.placeholder { display: grid; place-items: center; color: #aaa; transform: none; }
+.status { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-weight: 600; }
+.status .dot { width: 12px; height: 12px; border-radius: 50%; background: #999; }
+.status-green .dot { background: var(--green); }
+.status-amber .dot { background: var(--amber); }
+.status-red .dot { background: var(--red); }
+.checks { list-style: none; padding: 0; }
+.checks li { padding: 6px 0; }
+.checks li.ok::before { content: "✓ "; color: var(--green); }
+.question fieldset { border: 0; padding: 0; margin: 0 0 12px; }
+.question legend { font-size: 1.15em; font-weight: 600; margin-bottom: 10px; }
+.option { display: flex; gap: 8px; align-items: center; padding: 6px 0; }
+.option input { width: auto; }
+.feedback { color: var(--green); }
+.qnav { display: flex; gap: 10px; margin-top: 20px; }
+.qnav .danger { margin-left: auto; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #1d2330; padding: 12px 20px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.2); font-weight: 600; }
+.table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.table th, .table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table tr.flagged { background: #fff1f0; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; background: #e8ebf2; font-size: .8em; margin-right: 4px; }
+.badge.red { background: #fde2e0; color: var(--red); }
+.badge.amber { background: #fff1d6; color: #8a5a00; }
+.timeline { list-style: none; padding: 0; }
+.incident { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.incident.reviewed_ok { opacity: .7; }
+.incident.needs_follow_up { border-color: var(--red); }
+.incident-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.evidence { max-width: 320px; border-radius: 6px; margin: 10px 0; display: block; }
+.actions { display: flex; gap: 8px; }
+.consent { max-width: 720px; }
+.consent li { margin-bottom: 8px; }
+@media (max-width: 800px) { .exam-layout { grid-template-columns: 1fr; } }

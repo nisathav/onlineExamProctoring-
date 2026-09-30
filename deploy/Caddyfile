@@ -1,0 +1,29 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode gzip
+
+	# API: strip /api and forward to FastAPI (backend honours X-Forwarded-Proto)
+	handle_path /api/* {
+		request_body {
+			max_size 4MB
+		}
+		reverse_proxy backend:8000
+	}
+
+	# Presigned evidence URLs (bucket "evidence"); Host header is preserved for SigV4.
+	handle /evidence/* {
+		reverse_proxy minio:9000
+	}
+
+	handle {
+		reverse_proxy frontend:8080
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+}

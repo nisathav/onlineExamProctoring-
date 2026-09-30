@@ -1,0 +1,30 @@
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    TF_CPP_MIN_LOG_LEVEL=2
+
+# libGL/glib are needed by the OpenCV build that MediaPipe pulls in.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt requirements-dev.txt ./
+ARG INSTALL_DEV=false
+RUN pip install -r requirements.txt \
+    && if [ "$INSTALL_DEV" = "true" ]; then pip install -r requirements-dev.txt; fi
+
+COPY . .
+
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /app/models \
+    && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8000
+HEALTHCHECK --interval=15s --timeout=5s --start-period=120s --retries=5 \
+    CMD curl -fsS http://localhost:8000/health || exit 1
+
+CMD ["./entrypoint.sh"]
