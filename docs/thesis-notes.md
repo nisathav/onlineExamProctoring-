@@ -12,6 +12,7 @@ Paste the relevant thesis sections (4.2.x, 4.3.x, Appendix B) below so that futu
 
 ## Differences and additions
 
+- **Notebook model file:** saved with Keras 3.15.1, which TF 2.15.1 (Keras 2) cannot deserialise. `ml/convert_notebook_model.py` rebuilds `build_balanced_model()` in Keras 2 and copies the weights; the result matches Keras 3's own weight loading to within 2e-7. It loads in about 5 s and predicts in about 150 ms per frame on 4 CPU cores. The notebook's own test results for this model were close to chance (accuracy 0.53–0.62, looking-away recall 0 at thresholds ≤ 0.5), so it rarely flags looking away. Face-count checks do not depend on it.
 - **Model:** the notebook's final run trained MobileNetV3Small. The thesis names EfficientNetV2S, so `ml/architectures.py` includes both, and `ml/evaluate.py` produces the comparison table (Table 5.1).
 - **Split:** the notebook used 70/15/15; `ml/prepare_data.py` uses 80/15/5 as the build guide specifies.
 - **Model selection:** the notebook selected on "looking away" recall. Its last evaluation predicted "looking at" for all 294 images (away recall 0). `ml/train.py` checkpoints on validation AUC, and `ml/evaluate.py` ranks models by macro F1 then AUC.

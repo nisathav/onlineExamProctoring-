@@ -1,18 +1,69 @@
-"""Convert the Colab notebook's .h5 checkpoint to the .keras format the backend expects.
+"""Convert the Colab notebook's .h5 checkpoint to a .keras file the backend can load.
 
-The notebook (Enhanced_Proctoring_with_Gaze) saves `improved_gaze_detection_model.h5`:
-MobileNetV3Small + attention head, 224x224 RGB raw 0-255 input, output P(looking_at).
-That matches the backend's preprocessing, so it can be served as-is.
+The notebook trained with TensorFlow 2.17 / Keras 3, so its .h5 files cannot be
+deserialised by the backend's TensorFlow 2.15.1 (Keras 2). This script rebuilds the
+notebook's `build_balanced_model()` architecture in Keras 2 (MobileNetV3Small +
+spatial attention head, 224x224 RGB raw 0-255 input, output P(looking_at)) and copies
+the weights across layer by layer, checking every shape.
 
-Usage: python ml/convert_notebook_model.py improved_gaze_detection_model.h5 \
-           backend/models/gaze_model.keras
+Usage (with the backend's TF 2.15.1 environment):
+  python ml/convert_notebook_model.py improved_gaze_detection_model.h5 \
+      backend/models/gaze_model.keras
 """
 import argparse
 
+import h5py
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras import layers
 
-from losses import CUSTOM_OBJECTS
+
+def build_balanced_model() -> tf.keras.Model:
+    """Architecture from notebook cell 14 (build_balanced_model)."""
+    inputs = layers.Input(shape=(224, 224, 3))
+    base = tf.keras.applications.MobileNetV3Small(input_tensor=inputs, include_top=False, weights=None)
+    x = base.output
+    attention = layers.Conv2D(128, (1, 1), activation="relu")(x)
+    attention = layers.Conv2D(1, (1, 1), activation="sigmoid")(attention)
+    x = layers.Multiply()([x, attention])
+    x = layers.GlobalAveragePooling2D()(x)
+    x = layers.Dense(512, activation="relu")(x)
+    x = layers.Dropout(0.5)(x)
+    x = layers.Dense(256, activation="relu")(x)
+    x = layers.Dropout(0.4)(x)
+    outputs = layers.Dense(1, activation="sigmoid")(x)
+    return tf.keras.Model(inputs, outputs)
+
+
+def _decode(values):
+    return [v.decode() if isinstance(v, bytes) else v for v in values]
+
+
+def read_h5_weights(path: str) -> list[tuple[str, list[np.ndarray]]]:
+    """Weighted layers in model order, each with its arrays in saved order."""
+    with h5py.File(path, "r") as f:
+        group = f["model_weights"] if "model_weights" in f else f
+        result = []
+        for name in _decode(group.attrs["layer_names"]):
+            weight_names = _decode(group[name].attrs["weight_names"])
+            if weight_names:
+                result.append((name, [group[name][w][()] for w in weight_names]))
+        return result
+
+
+def convert(src: str) -> tf.keras.Model:
+    model = build_balanced_model()
+    targets = [layer for layer in model.layers if layer.weights]
+    sources = read_h5_weights(src)
+    if len(targets) != len(sources):
+        raise SystemExit(f"Layer count mismatch: model {len(targets)} vs file {len(sources)}")
+    for layer, (src_name, arrays) in zip(targets, sources):
+        expected = [tuple(w.shape) for w in layer.weights]
+        got = [a.shape for a in arrays]
+        if expected != got:
+            raise SystemExit(f"Shape mismatch at {layer.name} <- {src_name}: {expected} vs {got}")
+        layer.set_weights(arrays)
+    return model
 
 
 def main():
@@ -21,12 +72,10 @@ def main():
     parser.add_argument("dst")
     args = parser.parse_args()
 
-    model = tf.keras.models.load_model(args.src, custom_objects=CUSTOM_OBJECTS, compile=False)
-    if tuple(model.input_shape[1:]) != (224, 224, 3) or model.output_shape[-1] != 1:
-        raise SystemExit(f"Unexpected model shape {model.input_shape} -> {model.output_shape}")
-    prob = float(model(np.zeros((1, 224, 224, 3), np.float32), training=False)[0][0])
+    model = convert(args.src)
     model.save(args.dst)
-    print(f"Saved {args.dst} (sanity P(looking_at) on a black frame = {prob:.3f})")
+    prob = float(model(np.zeros((1, 224, 224, 3), np.float32), training=False)[0][0])
+    print(f"Saved {args.dst} (P(looking_at) on a black frame = {prob:.4f})")
 
 
 if __name__ == "__main__":

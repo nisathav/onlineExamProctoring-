@@ -108,3 +108,31 @@ def test_presigned_url_uses_public_endpoint_offline():
     url = storage.presigned_url(key)
     assert url.startswith("https://exam.example.com/evidence/student1/3/")
     assert "X-Amz-Expires=120" in url and "X-Amz-Signature=" in url
+
+
+def test_int_6_notebook_h5_conversion(tf, tmp_path):
+    """INT-6: ml/convert_notebook_model.py copies notebook weights exactly and the result serves."""
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ml"))
+    import convert_notebook_model as conv
+
+    from app.services.gaze_service import GazeService
+
+    original = conv.build_balanced_model()
+    rng = np.random.default_rng(3)
+    # small perturbation keeps BatchNorm variances positive
+    original.set_weights([(w + rng.normal(0, 0.01, w.shape)).astype("float32") for w in original.get_weights()])
+    src = tmp_path / "notebook.h5"
+    original.save(src)
+
+    converted = conv.convert(str(src))
+    batch = rng.integers(0, 255, (2, 224, 224, 3)).astype("float32")
+    np.testing.assert_allclose(converted(batch).numpy(), original(batch).numpy(), atol=1e-6)
+
+    dst = tmp_path / "gaze_model.keras"
+    converted.save(dst)
+    service = GazeService(str(dst))
+    assert service.load()
+    assert 0.0 <= service.predict_prob_at(np.zeros((100, 100, 3), np.uint8)) <= 1.0

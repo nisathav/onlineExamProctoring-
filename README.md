@@ -41,9 +41,9 @@ To enable gaze classification, put a Keras model at `backend/models/gaze_model.k
 
 This matches the training notebook. There are two ways to get a model:
 
-1. **From the notebook.** Convert its `improved_gaze_detection_model.h5`:
+1. **From the notebook.** Its `.h5` files were saved with Keras 3 (TF 2.17), which TF 2.15.1 cannot read directly. The converter rebuilds the architecture in Keras 2 and copies the weights; outputs match the original to within 2e-7:
    `python ml/convert_notebook_model.py improved_gaze_detection_model.h5 backend/models/gaze_model.keras`
-   (`.h5` also loads directly if you set `GAZE_MODEL_PATH`).
+   (`improved_gaze_detection_model.h5` and `gaze_model_balanced.h5` contain identical weights.)
 2. **Train with the scripts in `ml/`** (use a GPU):
    ```bash
    pip install -r backend/requirements.txt scikit-learn matplotlib
