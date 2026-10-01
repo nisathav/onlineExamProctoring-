@@ -115,7 +115,13 @@ def test_int_6_notebook_h5_conversion(tf, tmp_path):
     import sys
     from pathlib import Path
 
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ml"))
+    # repo-root ml/ on the host; mounted at /app/ml in the backend container
+    here = Path(__file__).resolve()
+    candidates = (here.parents[2] / "ml", here.parents[1] / "ml")
+    ml_dir = next((d for d in candidates if (d / "convert_notebook_model.py").exists()), None)
+    if ml_dir is None:
+        pytest.skip("ml/convert_notebook_model.py not available")
+    sys.path.insert(0, str(ml_dir))
     import convert_notebook_model as conv
 
     from app.services.gaze_service import GazeService

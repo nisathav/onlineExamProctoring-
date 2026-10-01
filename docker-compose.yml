@@ -64,6 +64,7 @@ services:
       - ./backend/tests:/app/tests
       - ./backend/alembic:/app/alembic
       - ./backend/models:/app/models:ro
+      - ./ml:/app/ml:ro
     ports:
       - "8000:8000"
     depends_on:
