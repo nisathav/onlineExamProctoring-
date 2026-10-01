@@ -49,7 +49,7 @@ services:
 
   minio:
     <<: *common
-    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z}
+    image: ${MINIO_IMAGE:-pgsty/minio:RELEASE.2026-08-04T00-00-00Z}
     command: server /data
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
