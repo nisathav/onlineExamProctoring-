@@ -13,8 +13,12 @@ RUN apt-get update \
 WORKDIR /app
 COPY requirements.txt requirements-dev.txt ./
 ARG INSTALL_DEV=false
-RUN pip install -r requirements.txt \
-    && if [ "$INSTALL_DEV" = "true" ]; then pip install -r requirements-dev.txt; fi
+# The cache mount keeps downloaded wheels between builds (not in the image), so a
+# dropped connection during the 475 MB TensorFlow download doesn't start over.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    unset PIP_NO_CACHE_DIR \
+    && pip install --timeout 120 --retries 10 -r requirements.txt \
+    && if [ "$INSTALL_DEV" = "true" ]; then pip install --timeout 120 --retries 10 -r requirements-dev.txt; fi
 
 COPY . .
 
