@@ -59,6 +59,25 @@ def test_int_5_model_round_trip_with_custom_loss(tf, tmp_path, suffix):
     assert pred.gaze in ("at", "away") and pred.threshold == pytest.approx(0.375)
 
 
+def test_int_5_fast_keras_load_matches_load_model(tf, tmp_path):
+    """INT-5: the extract-then-load path gives the same model as tf.keras load_model."""
+    from app.ml.losses import CUSTOM_OBJECTS, AsymmetricFocalLoss
+    from app.services.gaze_service import _load_keras_archive
+
+    path = tmp_path / "gaze_model.keras"
+    original = _tiny_model(tf, AsymmetricFocalLoss())
+    rng = np.random.default_rng(5)
+    original.set_weights([rng.normal(0, 0.1, w.shape).astype("float32") for w in original.get_weights()])
+    original.save(path)
+
+    fast = _load_keras_archive(tf, path, CUSTOM_OBJECTS)
+    slow = tf.keras.models.load_model(path, custom_objects=CUSTOM_OBJECTS, compile=False)
+    batch = rng.integers(0, 255, (2, 224, 224, 3)).astype("float32")
+    np.testing.assert_allclose(fast(batch).numpy(), slow(batch).numpy(), atol=1e-6)
+    for a, b in zip(fast.get_weights(), slow.get_weights()):
+        np.testing.assert_array_equal(a, b)
+
+
 def test_gaze_service_missing_model(tmp_path):
     from app.services.gaze_service import GazeService
 

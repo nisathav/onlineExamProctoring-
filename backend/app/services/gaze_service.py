@@ -8,8 +8,11 @@ Mirrors the training notebook exactly:
 """
 from __future__ import annotations
 
+import json
 import logging
+import tempfile
 import threading
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,6 +25,21 @@ log = logging.getLogger(__name__)
 IMG_SIZE = (224, 224)
 MIN_THRESHOLD_TILT = 0.2
 MIN_THRESHOLD_OTHER = 0.15
+
+
+def _load_keras_archive(tf, path: Path, custom_objects: dict):
+    """Load a .keras archive without compiling, like load_model(compile=False), but fast.
+
+    Keras 2.15 has h5py read model.weights.h5 straight from the zip. On Python 3.10 every
+    backward seek in a zip member re-reads it from the start, so a 110 MB EfficientNetV2S
+    took ~12 minutes. Extracting the weights to a real file first takes seconds.
+    """
+    with zipfile.ZipFile(path) as zf, tempfile.TemporaryDirectory() as tmp:
+        config = json.loads(zf.read("config.json"))
+        config.pop("compile_config", None)
+        model = tf.keras.saving.deserialize_keras_object(config, custom_objects=custom_objects)
+        model.load_weights(zf.extract("model.weights.h5", tmp))
+    return model
 
 
 def preprocess_face(face_bgr: np.ndarray) -> np.ndarray:
@@ -97,7 +115,10 @@ class GazeService:
 
         from app.ml.losses import CUSTOM_OBJECTS
 
-        self.model = tf.keras.models.load_model(path, custom_objects=CUSTOM_OBJECTS, compile=False)
+        if zipfile.is_zipfile(path):
+            self.model = _load_keras_archive(tf, path, CUSTOM_OBJECTS)
+        else:  # legacy .h5
+            self.model = tf.keras.models.load_model(path, custom_objects=CUSTOM_OBJECTS, compile=False)
         # Warm up so the first real request is not slow.
         self.model(np.zeros((1, *IMG_SIZE, 3), dtype=np.float32), training=False)
         log.info("Loaded gaze model from %s", path)
