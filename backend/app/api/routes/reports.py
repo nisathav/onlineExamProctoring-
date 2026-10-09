@@ -22,11 +22,13 @@ from app.models import (
 from app.schemas import (
     ExamReport,
     IncidentOut,
+    AttemptDecision,
     IncidentReview,
     StudentSummary,
     StudentTimeline,
 )
 from app.services import deps
+from app.services import pause
 from app.services.analysis import flag_reasons
 
 log = logging.getLogger(__name__)
@@ -99,6 +101,10 @@ def exam_report(exam_id: int, _: User = Depends(staff_only), db: Session = Depen
                 flagged=bool(reasons),
                 flag_reasons=reasons,
                 pending_reviews=sum(1 for i in incs if i.review_status == ReviewStatus.pending),
+                paused_at=attempt.paused_at if attempt else None,
+                pause_reason=(attempt.pause_reason or "") if attempt else "",
+                help_requested_at=attempt.help_requested_at if attempt else None,
+                help_message=(attempt.help_message or "") if attempt else "",
             )
         )
     return ExamReport(examination_id=exam.id, title=exam.title, students=summaries)
@@ -122,10 +128,18 @@ def student_timeline(
         .all()
     )
     reasons = _reasons(incidents)
+    attempt = db.query(ExamAttempt).filter_by(examination_id=exam_id, student_id=student_id).first()
     return StudentTimeline(
         examination_id=exam_id,
         student_id=student_id,
         username=student.user.username,
+        attempt_status=attempt.status.value if attempt else None,
+        paused_at=attempt.paused_at if attempt else None,
+        pause_reason=(attempt.pause_reason or "") if attempt else "",
+        help_requested_at=attempt.help_requested_at if attempt else None,
+        help_message=(attempt.help_message or "") if attempt else "",
+        decision_note=(attempt.decision_note or "") if attempt else "",
+        decided_at=attempt.decided_at if attempt else None,
         flagged=bool(reasons),
         flag_reasons=reasons,
         incidents=[_incident_out(i, storage) for i in incidents],
@@ -149,3 +163,49 @@ def review_incident(
     db.commit()
     db.refresh(incident)
     return _incident_out(incident, None)
+
+
+def _paused_attempt(db: Session, exam_id: int, student_id: int) -> ExamAttempt:
+    attempt = db.query(ExamAttempt).filter_by(examination_id=exam_id, student_id=student_id).first()
+    if attempt is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Attempt not found")
+    return attempt
+
+
+def _decision_response(attempt: ExamAttempt) -> dict:
+    return {"student_id": attempt.student_id, "examination_id": attempt.examination_id,
+            "attempt_status": attempt.status.value, "decision_note": attempt.decision_note}
+
+
+@router.post("/exams/{exam_id}/students/{student_id}/resume")
+def resume_attempt(
+    exam_id: int,
+    student_id: int,
+    body: AttemptDecision,
+    user: User = Depends(staff_only),
+    db: Session = Depends(get_db),
+):
+    """Staff decision: the paused student may continue. The looking-away count restarts."""
+    attempt = _paused_attempt(db, exam_id, student_id)
+    try:
+        pause.resume(db, attempt, user, body.note)
+    except pause.InvalidTransition as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
+    return _decision_response(attempt)
+
+
+@router.post("/exams/{exam_id}/students/{student_id}/terminate")
+def terminate_attempt(
+    exam_id: int,
+    student_id: int,
+    body: AttemptDecision,
+    user: User = Depends(staff_only),
+    db: Session = Depends(get_db),
+):
+    """Staff decision: the paused student may not continue; the exam ends with answers so far."""
+    attempt = _paused_attempt(db, exam_id, student_id)
+    try:
+        pause.terminate(db, attempt, user, body.note)
+    except pause.InvalidTransition as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
+    return _decision_response(attempt)

@@ -9,9 +9,17 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.security import require_role
 from app.db.session import get_db
-from app.models import AttemptStatus, ExamAttempt, Examination, ProctoringIncident, User
+from app.models import (
+    AttemptStatus,
+    ExamAttempt,
+    Examination,
+    IncidentType,
+    ProctoringIncident,
+    User,
+)
 from app.schemas import FrameIn, FrameResult
 from app.services import deps
+from app.services import pause
 from app.services.proctoring import InvalidImage, analyze_frame, decode_base64_image
 from app.services.storage import evidence_key
 
@@ -78,8 +86,10 @@ async def post_frame(
     attempt = (
         db.query(ExamAttempt).filter_by(student_id=user.student.id, examination_id=exam_id).first()
     )
-    if exam is None or attempt is None or attempt.status != AttemptStatus.in_progress:
+    if exam is None or attempt is None:
         raise HTTPException(status.HTTP_409_CONFLICT, "No exam in progress for this exam_id")
+    if attempt.status != AttemptStatus.in_progress:
+        raise HTTPException(status.HTTP_409_CONFLICT, pause.STATUS_MESSAGES[attempt.status])
 
     try:
         decision = await deps.run_ml(analyze_frame, raw, detector, gaze)
@@ -107,6 +117,12 @@ async def post_frame(
         db.commit()
         incident_id = incident.id
 
+    paused = False
+    if decision.incident_type == IncidentType.looking_away:
+        paused = pause.maybe_pause(db, attempt, get_settings().pause_after_away_count)
+        if paused:
+            log.info("exam paused user=%s exam=%s reason=%s", user.username, exam_id, attempt.pause_reason)
+
     elapsed_ms = (time.perf_counter() - started) * 1000
     log.info(
         "frame user=%s exam=%s faces=%s gaze=%s incident=%s %.1fms",
@@ -121,4 +137,6 @@ async def post_frame(
         warning=decision.warning,
         incident_id=incident_id,
         processing_ms=round(elapsed_ms, 1),
+        exam_paused=paused,
+        pause_message=pause.PAUSE_MESSAGE if paused else None,
     )

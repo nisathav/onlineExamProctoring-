@@ -25,6 +25,17 @@ Each Appendix B test ID maps to an automated test, or to a manual step where aut
 | EXAM-3 | One question at a time, never `correct_answer` | `test_exam_3_questions_never_expose_correct_answer`, `test_exam_3b_must_start_and_consent_first`; frontend Question |
 | EXAM-4 | Answers auto-marked; progress and score | `test_exam_4_answers_auto_marked_and_progress`, `test_exam_4b_invalid_answers` |
 
+## Exam pause workflow — EXAM-5..EXAM-9, INT-7
+
+| ID | What | Automated test |
+|---|---|---|
+| EXAM-5 | 3rd looking-away detection pauses the exam; other incidents don't count; limit configurable | `test_pause.py::test_exam_5_*`; frontend `pause.test.js` EXAM-5/6 |
+| EXAM-6 | Paused exam blocks questions, answers, submit and frames; reopening shows the pause | `test_exam_6_*`; frontend EXAM-6 |
+| EXAM-7 | Student notifies supervisor; staff dashboard banner and review page show it | `test_exam_7_*`; frontend EXAM-7 and staff banner test |
+| EXAM-8 | Staff "Allow to continue" resumes and restarts the count | `test_exam_8_*`; frontend EXAM-8 and decision panel test |
+| EXAM-9 | Staff "End exam" terminates; student sees the ended screen; streams stop | `test_exam_9_*`; frontend EXAM-9 |
+| INT-7 | Resume/end are staff-only | `test_int_7_decisions_are_staff_only` |
+
 ## Screen sharing — SCRN
 
 | ID | What | Automated test / manual step |

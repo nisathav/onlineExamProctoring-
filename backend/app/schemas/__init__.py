@@ -116,11 +116,25 @@ class ExamStaffOut(ExamOut):
 
 
 class AttemptOut(ORM):
+    """The student's view of their attempt, including pause state."""
+
     id: int
     examination_id: int
     status: str
     started_at: datetime
     submitted_at: datetime | None = None
+    paused_at: datetime | None = None
+    pause_reason: str = ""
+    help_requested_at: datetime | None = None
+    decision_note: str = ""
+
+
+class HelpRequest(BaseModel):
+    message: str = Field(default="", max_length=500)
+
+
+class AttemptDecision(BaseModel):
+    note: str = Field(default="", max_length=1000)
 
 
 class AnswerSubmit(BaseModel):
@@ -164,6 +178,8 @@ class FrameResult(BaseModel):
     warning: str | None
     incident_id: int | None = None
     processing_ms: float
+    exam_paused: bool = False
+    pause_message: str | None = None
 
 
 class IncidentOut(ORM):
@@ -204,6 +220,10 @@ class StudentSummary(BaseModel):
     flagged: bool
     flag_reasons: list[str]
     pending_reviews: int
+    paused_at: datetime | None = None
+    pause_reason: str = ""
+    help_requested_at: datetime | None = None
+    help_message: str = ""
 
 
 class ExamReport(BaseModel):
@@ -216,6 +236,13 @@ class StudentTimeline(BaseModel):
     examination_id: int
     student_id: int
     username: str
+    attempt_status: str | None = None
+    paused_at: datetime | None = None
+    pause_reason: str = ""
+    help_requested_at: datetime | None = None
+    help_message: str = ""
+    decision_note: str = ""
+    decided_at: datetime | None = None
     flagged: bool
     flag_reasons: list[str]
     incidents: list[IncidentOut]

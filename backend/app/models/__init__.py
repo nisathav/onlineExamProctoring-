@@ -42,7 +42,9 @@ class ReviewStatus(str, enum.Enum):
 
 class AttemptStatus(str, enum.Enum):
     in_progress = "in_progress"
+    paused = "paused"  # auto-paused after repeated looking-away; waiting for a staff decision
     submitted = "submitted"
+    terminated = "terminated"  # staff decided the student may not continue
 
 
 class User(Base):
@@ -128,6 +130,16 @@ class ExamAttempt(Base):
     )
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Pause / staff-decision workflow
+    paused_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    pause_reason: Mapped[str] = mapped_column(String(255), default="")
+    last_resumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    help_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    help_message: Mapped[str] = mapped_column(Text, default="")
+    decision_note: Mapped[str] = mapped_column(Text, default="")
+    decided_by_id: Mapped[int | None] = mapped_column(ForeignKey("staff.id"), nullable=True)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     student: Mapped[Student] = relationship(back_populates="attempts")
 

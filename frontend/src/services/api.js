@@ -87,10 +87,16 @@ export const api = {
     request(`/exams/${id}/answers`, { method: "POST", body: { question_id: questionId, answer } }),
   submitExam: (id) => request(`/exams/${id}/submit`, { method: "POST" }),
   progress: (id) => request(`/exams/${id}/progress`),
+  attempt: (id) => request(`/exams/${id}/attempt`),
+  requestHelp: (id, message = "") => request(`/exams/${id}/help`, { method: "POST", body: { message } }),
   sendFrame: (examId, image) =>
     request("/proctoring/frame", { method: "POST", body: { exam_id: examId, image } }),
   examReport: (id) => request(`/reports/exams/${id}`),
   studentTimeline: (examId, studentId) => request(`/reports/exams/${examId}/students/${studentId}`),
+  resumeAttempt: (examId, studentId, note = "") =>
+    request(`/reports/exams/${examId}/students/${studentId}/resume`, { method: "POST", body: { note } }),
+  terminateAttempt: (examId, studentId, note = "") =>
+    request(`/reports/exams/${examId}/students/${studentId}/terminate`, { method: "POST", body: { note } }),
   reviewIncident: (id, reviewStatus, note = "") =>
     request(`/reports/incidents/${id}`, { method: "PATCH", body: { review_status: reviewStatus, note } }),
 };

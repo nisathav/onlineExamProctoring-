@@ -28,7 +28,7 @@ docker compose up --build
 
 The dev stack runs migrations and seeds `staff1 / staffpass123`, `student1 / studentpass123` and a 10-question sample exam (`SEED_DATA=true`).
 
-A student signs in, accepts the monitoring notice, turns on the camera, shares the **entire screen**, and sits the exam. Staff sign in and land on `/proctor`, which lists students with alert badges and refreshes every 7 s. Staff open a student to review evidence images and mark each incident "Reviewed – OK" or "Needs follow-up".
+A student signs in, accepts the monitoring notice, turns on the camera, shares the **entire screen**, and sits the exam. After 3 "looking away" detections the exam **pauses**: questions are hidden and the student is told to contact the exam supervisor, with a **Notify supervisor** button to ping staff. Staff see a red banner on the dashboard, check the captured images, and choose **Allow to continue** (the count restarts) or **End exam**. Set `PAUSE_AFTER_AWAY_COUNT` in `.env` to change the limit, or 0 to turn pausing off. Staff sign in and land on `/proctor`, which lists students with alert badges and refreshes every 7 s. Staff open a student to review evidence images and mark each incident "Reviewed – OK" or "Needs follow-up".
 
 ## Gaze model
 

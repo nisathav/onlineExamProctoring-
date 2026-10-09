@@ -18,6 +18,7 @@ Paste the relevant thesis sections (4.2.x, 4.3.x, Appendix B) below so that futu
 - **Model selection:** the notebook selected on "looking away" recall. Its last evaluation predicted "looking at" for all 294 images (away recall 0). `ml/train.py` checkpoints on validation AUC, and `ml/evaluate.py` ranks models by macro F1 then AUC.
 - **Evidence key:** `{username}/{exam_id}/{timestamp}.jpg`. The exam id was added to the thesis's `{username}/{timestamp}.jpg`.
 - **Incidents:** no face, multiple faces and looking away each create a `ProctoringIncident`. Temporal flags are raised for 3+ away incidents in 30 s, 15 s+ continuously away, or any multiple-faces incident. Staff mark each incident reviewed; nothing is penalised automatically.
+- **Auto-pause (added after the thesis design):** 3 looking-away detections in an attempt (configurable, `PAUSE_AFTER_AWAY_COUNT`) pause the exam. The student cannot see or answer questions and can notify the supervisor; staff review the images and either allow the student to continue (the count restarts) or end the exam. The pause, the help request, and who decided what and when are all stored on the attempt. Because the current model is weak, expect false pauses until it is retrained.
 - **Feedback to students:** answers show "Answer saved" but not whether they are correct, because showing correctness would leak `correct_answer`.
 
 ## Open points to confirm against the thesis

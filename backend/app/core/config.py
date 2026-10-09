@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     # Temporal analysis (Phase 7)
     flag_away_count: int = 3
+    # Auto-pause the exam after this many looking-away detections (counted since the
+    # attempt started or since staff last let the student continue). 0 disables it.
+    pause_after_away_count: int = 3
     flag_window_seconds: int = 30
     long_away_seconds: int = 15
 

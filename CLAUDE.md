@@ -23,6 +23,6 @@ Web app that monitors students during online exams: webcam frame every 3 s → M
 - Heavy ML work (face detection, prediction) runs in a thread pool, never directly in async route handlers.
 - The focal loss must be imported from app/ml/losses.py when loading the model (custom object).
 - Capture interval 3 s, gaze threshold 0.5 with orientation-based adjustment. Don't change these without being asked.
-- Flags are decision support only: no automatic penalties; staff review incidents.
+- Flags are decision support only: no automatic penalties; staff review incidents. The one automatic action is a **pause**: after 3 looking-away detections (PAUSE_AFTER_AWAY_COUNT) the exam pauses until staff choose "allow to continue" or "end exam". Ending an exam is always a staff decision.
 - Write or update tests with every change and run them before saying a task is done. Map tests to Appendix B IDs (AUTH-x, EXAM-x, FACE-x, SEC-x, API-x, DATA-x, INT-x) in test names or docstrings.
 - Plan before large changes; keep changes scoped to the current phase in BUILD_GUIDE.md.

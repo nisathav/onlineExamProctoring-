@@ -16,6 +16,7 @@ from app.models import (
     StudentAnswer,
     User,
 )
+from app.services import pause
 from app.schemas import (
     AnswerResult,
     AnswerSubmit,
@@ -24,6 +25,7 @@ from app.schemas import (
     ExamOut,
     ExamStaffOut,
     ExamUpdate,
+    HelpRequest,
     Progress,
     QuestionCreate,
     QuestionStaffOut,
@@ -70,8 +72,22 @@ def _require_in_progress(db: Session, user: User, exam_id: int) -> ExamAttempt:
     if attempt is None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Exam not started")
     if attempt.status != AttemptStatus.in_progress:
-        raise HTTPException(status.HTTP_409_CONFLICT, "Exam already submitted")
+        raise HTTPException(status.HTTP_409_CONFLICT, pause.STATUS_MESSAGES[attempt.status])
     return attempt
+
+
+def attempt_out(attempt: ExamAttempt) -> AttemptOut:
+    return AttemptOut(
+        id=attempt.id,
+        examination_id=attempt.examination_id,
+        status=attempt.status.value,
+        started_at=attempt.started_at,
+        submitted_at=attempt.submitted_at,
+        paused_at=attempt.paused_at,
+        pause_reason=attempt.pause_reason or "",
+        help_requested_at=attempt.help_requested_at,
+        decision_note=attempt.decision_note or "",
+    )
 
 
 # ---------------- Listing ----------------
@@ -172,15 +188,36 @@ def start_exam(exam_id: int, user: User = Depends(student_only), db: Session = D
         db.add(attempt)
         db.commit()
         db.refresh(attempt)
-    elif attempt.status != AttemptStatus.in_progress:
-        raise HTTPException(status.HTTP_409_CONFLICT, "Exam already submitted")
-    return AttemptOut(
-        id=attempt.id,
-        examination_id=attempt.examination_id,
-        status=attempt.status.value,
-        started_at=attempt.started_at,
-        submitted_at=attempt.submitted_at,
-    )
+    elif attempt.status not in (AttemptStatus.in_progress, AttemptStatus.paused):
+        raise HTTPException(status.HTTP_409_CONFLICT, pause.STATUS_MESSAGES[attempt.status])
+    # A paused attempt is returned as-is so a reloaded page shows the paused screen.
+    return attempt_out(attempt)
+
+
+@router.get("/exams/{exam_id}/attempt", response_model=AttemptOut)
+def get_attempt(exam_id: int, user: User = Depends(student_only), db: Session = Depends(get_db)):
+    """The student's attempt status; polled while paused to learn the staff decision."""
+    _active_exam_for_student(db, exam_id)
+    attempt = _attempt(db, user, exam_id)
+    if attempt is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Exam not started")
+    return attempt_out(attempt)
+
+
+@router.post("/exams/{exam_id}/help", response_model=AttemptOut)
+def request_help(
+    exam_id: int, body: HelpRequest, user: User = Depends(student_only), db: Session = Depends(get_db)
+):
+    """Student pings the exam supervisor about a paused exam."""
+    _active_exam_for_student(db, exam_id)
+    attempt = _attempt(db, user, exam_id)
+    if attempt is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Exam not started")
+    try:
+        pause.request_help(db, attempt, body.message)
+    except pause.InvalidTransition as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
+    return attempt_out(attempt)
 
 
 @router.get("/exams/{exam_id}/questions/{index}", response_model=StudentQuestionPage)
@@ -269,6 +306,6 @@ def progress(exam_id: int, user: User = Depends(student_only), db: Session = Dep
         answered=answered,
         status=attempt.status.value if attempt else "not_started",
     )
-    if attempt and attempt.status == AttemptStatus.submitted:
+    if attempt and attempt.status in (AttemptStatus.submitted, AttemptStatus.terminated):
         result.score, result.max_score = _score(db, user.student.id, exam)
     return result
