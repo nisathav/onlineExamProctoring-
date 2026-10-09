@@ -1,3 +1,6 @@
+"""Alembic start-up script: connects to the database from DATABASE_URL and compares it
+with the SQLAlchemy models in app/models so migrations can be generated and applied."""
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool

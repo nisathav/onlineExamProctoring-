@@ -1,3 +1,5 @@
+// Vite settings (the tool that runs the dev server and builds the React app).
+// Allows JSX inside .js files and bakes in the API address from VITE_API_URL.
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 

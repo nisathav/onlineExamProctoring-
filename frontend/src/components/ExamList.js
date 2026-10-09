@@ -1,3 +1,4 @@
+// Student page listing the exams that are currently open, each with a Start link.
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { api } from "../services/api";

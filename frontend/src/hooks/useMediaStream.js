@@ -1,3 +1,6 @@
+// Reusable logic for turning on the webcam and screen sharing, turning them off, and
+// explaining failures in plain words (permission denied, no camera, not HTTPS,
+// unsupported browser, shared a window instead of the whole screen).
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // Maps getUserMedia/getDisplayMedia failures to messages a student can act on.

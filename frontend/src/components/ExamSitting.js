@@ -1,3 +1,7 @@
+// The exam page a student sits. Flow: consent screen -> turn on camera + share whole
+// screen -> begin exam -> answer questions while a webcam frame is checked every 3 s
+// (live preview, green/amber/red status, warning pop-ups) -> finish, which stops
+// camera and screen sharing and shows the score.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import useGazeTracking from "../hooks/useGazeTracking";

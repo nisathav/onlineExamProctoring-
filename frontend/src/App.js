@@ -1,3 +1,6 @@
+// Top-level layout and page routing: header bar with log-out, and the pages
+// /login, /exams, /exam/:id, /proctor and /proctor/exams/:examId/students/:studentId.
+// Guard keeps students out of staff pages and vice versa.
 import { useEffect } from "react";
 import { Link, Redirect, Route, Switch, useLocation } from "wouter";
 import ExamList from "./components/ExamList";

@@ -1,3 +1,5 @@
+// Tests for the pages: login, exam list, questions, the full exam-sitting flow (consent,
+// camera, screen share, warnings, submit) and the staff dashboard / incident review.
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Router } from "wouter";

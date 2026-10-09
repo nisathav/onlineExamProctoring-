@@ -1,4 +1,8 @@
 #!/bin/sh
+# Start-up script run when the backend container starts:
+#   1. applies database migrations (creates/updates tables)
+#   2. optionally loads demo data (staff1, student1, sample exam) when SEED_DATA=true
+#   3. starts the API server (auto-reload in development, several workers in production)
 set -e
 
 alembic upgrade head

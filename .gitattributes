@@ -1,1 +1,3 @@
+# Git settings: keep shell scripts with Unix (LF) line endings so they still run inside
+# Linux Docker containers when the repo is checked out on Windows.
 *.sh text eol=lf

@@ -1,3 +1,6 @@
+"""Database connection: builds the SQLAlchemy engine from DATABASE_URL and provides
+get_db(), which hands each API request its own database session."""
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 

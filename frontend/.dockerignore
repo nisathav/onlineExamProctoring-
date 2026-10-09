@@ -1,3 +1,4 @@
+# Files Docker must NOT copy into the frontend image (installed packages, build output).
 node_modules/
 dist/
 coverage/

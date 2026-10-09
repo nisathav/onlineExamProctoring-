@@ -1,3 +1,5 @@
+/* All styling for the web app: layout, buttons, the camera status colours
+   (green = looking at screen, amber = looking away, red = no face), tables and badges. */
 :root {
   --bg: #f5f6f8; --card: #fff; --text: #1d2330; --muted: #677084; --line: #dde1e8;
   --accent: #2f5bd3; --green: #1f9d55; --amber: #d98b00; --red: #d0342c;

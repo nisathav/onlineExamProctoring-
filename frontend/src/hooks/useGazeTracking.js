@@ -1,3 +1,5 @@
+// Reusable logic that grabs one webcam frame every 3 seconds, sends it to the backend
+// for face/gaze checking, and keeps the latest status and a history of warnings.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../services/api";
 

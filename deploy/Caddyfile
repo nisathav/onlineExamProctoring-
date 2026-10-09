@@ -1,3 +1,7 @@
+# Production web entrance (Caddy). Gets an HTTPS certificate automatically and routes:
+#   /api/*      -> backend API
+#   /evidence/* -> MinIO evidence images (only via signed, short-lived links)
+#   everything else -> the React website
 {
 	email {$ACME_EMAIL}
 }

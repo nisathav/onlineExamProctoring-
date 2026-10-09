@@ -1,3 +1,7 @@
+"""Entry point of the backend API. Creates the FastAPI app, adds the security middleware
+(CORS, security headers, size limits, HTTPS redirect in production), plugs in all route
+files, loads the gaze model at start-up and exposes GET /health."""
+
 import asyncio
 import logging
 from contextlib import asynccontextmanager

@@ -1,1 +1,4 @@
+Database migrations: versions/ holds one file per change to the database tables.
+Apply them with `alembic upgrade head` (entrypoint.sh does this automatically).
+
 Generic single-database configuration.

@@ -1,5 +1,8 @@
 """initial schema
 
+Creates all tables: users, students, staff, examinations, questions, exam attempts,
+student answers and proctoring incidents.
+
 Revision ID: bb458f8f0230
 Revises: 
 Create Date: 2026-09-30 13:45:16.941650

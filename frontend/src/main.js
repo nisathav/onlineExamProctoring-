@@ -1,3 +1,5 @@
+// Browser entry point: mounts the React app into index.html and sends "/" to the right
+// start page (login, the student's exam list, or the staff dashboard).
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Redirect, Route, Switch } from "wouter";

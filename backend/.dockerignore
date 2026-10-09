@@ -1,3 +1,4 @@
+# Files Docker must NOT copy into the backend image (caches, local test DB, secrets).
 __pycache__/
 *.pyc
 .pytest_cache/

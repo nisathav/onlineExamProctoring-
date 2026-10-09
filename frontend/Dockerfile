@@ -1,3 +1,7 @@
+# Recipe for the frontend container, in three stages:
+#   dev   - runs the Vite development server on port 3000 (used by docker-compose.yml)
+#   build - compiles the React app into static files
+#   prod  - serves those files with nginx as a non-root user (used by docker-compose.prod.yml)
 # ---- dev: Vite dev server (docker-compose.yml) ----
 FROM node:20-alpine AS dev
 WORKDIR /app

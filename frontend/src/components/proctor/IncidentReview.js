@@ -1,3 +1,5 @@
+// Staff page for one student: timeline of incidents with the evidence photos, and buttons
+// to mark each one "Reviewed - OK" or "Needs follow-up". Nothing here applies a penalty.
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { api } from "../../services/api";

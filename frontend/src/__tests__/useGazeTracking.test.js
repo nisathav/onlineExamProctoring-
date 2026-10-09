@@ -1,3 +1,4 @@
+// Tests for the 3-second frame capture hook, using fake timers (INT/FACE test IDs).
 import { act, renderHook } from "@testing-library/react";
 import useGazeTracking, { CAPTURE_INTERVAL_MS, captureFrame, statusFromResult } from "../hooks/useGazeTracking";
 

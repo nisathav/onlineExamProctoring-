@@ -1,3 +1,5 @@
+// Tests for services/api.js: login, attaching the token, handling expired sessions and
+// error messages.
 import { api, getToken, getUser, login, request, setUnauthorizedHandler } from "../services/api";
 import { mockFetch } from "./testUtils";
 

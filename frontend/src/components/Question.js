@@ -1,3 +1,5 @@
+// Shows one multiple-choice question and saves the chosen answer. It only confirms
+// "Answer saved"; it never reveals whether the answer is correct.
 import { useEffect, useState } from "react";
 
 // One question at a time. Feedback confirms the answer was saved; correctness is not revealed.

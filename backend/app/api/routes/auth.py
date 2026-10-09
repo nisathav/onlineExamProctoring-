@@ -1,3 +1,7 @@
+"""Account and login API (/auth/...): register a student, log in to get a JWT token,
+read your own profile, and record the student's consent to camera monitoring.
+Login attempts are rate-limited."""
+
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status

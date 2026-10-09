@@ -1,6 +1,7 @@
 {
   "name": "proctoring-frontend",
   "version": "1.0.0",
+  "description": "React website for the proctoring system: student exam pages with webcam/screen monitoring and the staff proctor dashboard.",
   "private": true,
   "type": "module",
   "scripts": {

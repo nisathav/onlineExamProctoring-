@@ -1,3 +1,6 @@
+# Recipe for the backend container: Python 3.10 + FastAPI + TensorFlow/MediaPipe.
+# Installs the Python packages, copies the code, runs as a non-root user, and starts the
+# API through entrypoint.sh. A health check pings /health so Docker knows when it is ready.
 FROM python:3.10-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

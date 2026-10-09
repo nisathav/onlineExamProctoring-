@@ -1,3 +1,7 @@
+"""Shared test setup for the backend: uses a throwaway SQLite database, loads the demo data
+before each test, and replaces the camera/AI/storage parts with fakes so tests run fast
+without TensorFlow, MediaPipe or MinIO."""
+
 import os
 
 os.environ["ENVIRONMENT"] = "test"

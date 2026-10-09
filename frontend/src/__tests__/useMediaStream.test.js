@@ -1,3 +1,4 @@
+// Tests for the camera / screen-sharing hook, using fake devices (SCRN-x test IDs).
 import { act, renderHook } from "@testing-library/react";
 import useMediaStream, { describeMediaError } from "../hooks/useMediaStream";
 import { fakeStream, installMediaDevices, namedError } from "./testUtils";

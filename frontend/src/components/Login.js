@@ -1,3 +1,5 @@
+// Sign-in page: sends username/password to the API and opens the student's exam list
+// or the staff dashboard depending on the account type.
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { login } from "../services/api";

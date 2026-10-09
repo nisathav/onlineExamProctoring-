@@ -1,3 +1,5 @@
+// Staff dashboard: pick an exam and see every student with incident counts, score and
+// alert badges. Refreshes automatically every 7 seconds.
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { api } from "../../services/api";

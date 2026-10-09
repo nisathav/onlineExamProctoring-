@@ -1,3 +1,4 @@
+# Python packages the backend needs to run (exact versions, as fixed in CLAUDE.md).
 fastapi==0.115.4
 uvicorn[standard]==0.32.0
 SQLAlchemy==2.0.36

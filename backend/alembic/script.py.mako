@@ -1,3 +1,5 @@
+## Template Alembic uses to create each new migration file. (Lines starting with ## are
+## not copied into the generated files.)
 """${message}
 
 Revision ID: ${up_revision}
